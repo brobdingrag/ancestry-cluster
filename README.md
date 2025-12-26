@@ -62,8 +62,8 @@ It estimates two key outputs:
 - Entry `Q[i,k]` is the **estimated fraction of individual *i*’s genome** assigned to ancestral cluster *k*
 
 ### 2) The `P` file (`global.5.P`) — ancestral allele frequencies
-- Conceptually: **K clusters × M SNPs**
-- `P[k, m]` is the **estimated allele frequency** at SNP *m* in ancestral cluster *k*
+- Conceptually: **M SNPs × K clusters**
+- `P[m, k]` is the **estimated allele frequency** at SNP *m* in ancestral cluster *k*
 
 Internally, ADMIXTURE iteratively updates:
 - **ancestry proportions per individual** (Q)
