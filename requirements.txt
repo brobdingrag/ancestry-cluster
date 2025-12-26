@@ -3,8 +3,3 @@ numpy
 matplotlib
 seaborn
 goldborn
-
-
-
-
-ipykernel

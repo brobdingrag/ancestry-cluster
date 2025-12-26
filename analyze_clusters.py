@@ -98,6 +98,7 @@ fig.text(
 
 ax.set_ylabel("")  # remove y-label
 fig.tight_layout(pad=2)
+fig.savefig("median_iqr_each_population.png", dpi=300, bbox_inches='tight', pad_inches=0.15)
 fig.savefig("median_iqr_each_population.pdf", dpi=300, bbox_inches='tight', pad_inches=0.15)
 plt.close()
 
@@ -175,6 +176,7 @@ pop_change_idxs = [0] + [i for i in range(1, len(sorted_populations)) if sorted_
 # Add a thin vertical gridline at the start of each new Population, EXCEPT at position 0 (already at the y-axis)
 for pop_idx in pop_change_idxs[1:]:
     ax.axvline(pop_idx, color='k', linestyle='-', linewidth=0.75, zorder=5)
+fig.savefig("ancestry_fraction_each_individual.png", dpi=300, bbox_inches='tight', pad_inches=0.15)
 fig.savefig("ancestry_fraction_each_individual.pdf", dpi=300, bbox_inches='tight', pad_inches=0.15)
 plt.close()
 

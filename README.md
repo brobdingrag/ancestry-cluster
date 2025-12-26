@@ -129,7 +129,7 @@ On a typical modern workstation:
 - **Runtime:** expect **~1 hour** end-to-end (network + compute)
 - **Threads:** uses up to **6 threads** (`--threads 6`, `admixture -j6`)
 - **Memory:** plan for **~14 GB RAM** available (PLINK steps request up to 14,000 MB)
-- **Storage:** plan for **~10+ GB free disk** (downloads + intermediates + outputs)
+- **Storage:** plan for **~100 GB free disk** (downloads + intermediates + outputs)
 
 Network speed matters a lot because the input genotype download is large.
 
