@@ -84,7 +84,16 @@ Practical takeaway:
 
 This repo includes example PDFs produced by `analyze_clusters.py`:
 
-### Median + IQR by population (summary view)
+### Estimated cluster assignment (ancestry) of individual 
+This stacked-bar plot shows:
+- **every individual** (one vertical bar per person)
+- ancestry proportions across the 5 inferred components
+- individuals are ordered by superpopulation/population labels **only for visualization** (labels are applied after inference)
+
+![Ancestry fraction per individual](example_images/ancestry_fraction_each_individual.png)
+
+
+### Median + IQR ancestry fraction by population (summary view)
 This heatmap summarizes ancestry percentages **per population**:
 - Each cell shows **median (IQR)** for the **estimated %** ancestry component
 - Rows are labeled by `Superpopulation: Population`
@@ -92,13 +101,6 @@ This heatmap summarizes ancestry percentages **per population**:
 
 ![Median and IQR per population](example_images/median_iqr_each_population.png)
 
-### Each individual (full-resolution view)
-This stacked-bar plot shows:
-- **every individual** (one vertical bar per person)
-- ancestry proportions across the 5 inferred components
-- individuals are ordered by superpopulation/population labels **only for visualization** (labels are applied after inference)
-
-![Ancestry fraction per individual](example_images/ancestry_fraction_each_individual.png)
 
 ---
 
