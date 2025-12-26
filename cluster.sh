@@ -46,23 +46,40 @@ plink2 --pfile all_hg38 vzs \
        --make-pgen \
        --out all_hg38_unrelated \
        --allow-extra-chr \
-       --memory 12000 \
+       --memory 20000 \
        --threads 4
 
 # ========================================
-# Filter, deduplicate, and convert genotype data to BED files
+# Filter and convert genotype data to BED files
 # ========================================
 
 plink2 --pfile all_hg38_unrelated \
-       --chr 1-22 \
-       --max-alleles 2 \
-       --rm-dup exclude-mismatch \
-       --set-missing-var-ids '@_#_$1_$2' \
-       --make-bed \
-       --out autosomes \
-       --allow-extra-chr \
-       --memory 12000 \
-       --threads 4
+  --chr 1-22 \
+  --max-alleles 2 \
+  --set-missing-var-ids '@_#_$1_$2' \
+  --make-pgen \
+  --out autosomes_tmp \
+  --allow-extra-chr \
+  --memory 20000 \
+  --threads 4
+
+
+# Immediately reduce to HQ SNPs 
+plink2 --pfile autosomes_tmp \
+  --extract /opt/high_quality_snps.txt \
+  --make-pgen \
+  --out autosomes_hq \
+  --memory 20000 \
+  --threads 4
+
+
+# Now rm-dup on the much smaller set
+plink2 --pfile autosomes_hq \
+  --rm-dup exclude-mismatch \
+  --make-bed \
+  --out autosomes \
+  --memory 12000 \
+  --threads 4
 
 # ========================================
 # Clean up intermediate and temporary files
