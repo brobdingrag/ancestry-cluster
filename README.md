@@ -88,7 +88,7 @@ Important nuance:
 - We infer clusters **first**, then **compare** to known labels **afterward**.
 
 ### Projection mode (how you use this on new people)
-Once you’ve inferred allele frequencies (**the `P` file**) on a reference panel (here: 1000G), you can use ADMIXTURE **projection mode** (`--project`) to estimate ancestry proportions (**a `Q` file**) for **new individuals**, while keeping the inferred ancestral allele frequencies fixed. This is a lot like what 23andMe does when they tell you the percentage of your genoem that belongs to each ancestry group. 
+Once you’ve inferred allele frequencies (**the `P` file**) on a reference panel (here: 1000G), you can use ADMIXTURE **projection mode** (`--project`) to estimate ancestry proportions (**a `Q` file**) for **new individuals**, while keeping the inferred ancestral allele frequencies fixed. This is a lot like what 23andMe does when they tell you the percentage of your genome that belongs to each ancestry group. 
 
 Practical takeaway:
 - **Train** on 1000G → learn **`P`**
