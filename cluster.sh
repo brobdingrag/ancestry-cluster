@@ -1,7 +1,10 @@
+#!/bin/bash
 
 # =========================
 # Set up working directory
 # =========================
+
+set -euo pipefail
 
 mkdir -p data  # Create data directory if it does not exist
 cd data        # Navigate into data directory
@@ -42,80 +45,17 @@ plink2 --zst-decompress all_hg38.pgen.zst > all_hg38.pgen
 # ========================================
 
 plink2 --pfile all_hg38 vzs \
-       --remove deg2_hg38.king.cutoff.out.id \
-       --make-pgen \
-       --out all_hg38_unrelated \
-       --allow-extra-chr \
-       --memory 20000 \
-       --threads 4
-
-# ========================================
-# Filter and convert genotype data to BED files
-# ========================================
-
-plink2 --pfile all_hg38_unrelated \
+  --remove deg2_hg38.king.cutoff.out.id \
   --chr 1-22 \
   --max-alleles 2 \
+  --extract /opt/high_quality_snps.txt \
   --set-missing-var-ids '@_#_$1_$2' \
-  --make-pgen \
-  --out autosomes_tmp \
+  --make-bed \
+  --out global_before_qc \
   --allow-extra-chr \
   --memory 20000 \
-  --threads 4
+  --threads 6
 
-
-# Immediately reduce to HQ SNPs 
-plink2 --pfile autosomes_tmp \
-  --extract /opt/high_quality_snps.txt \
-  --make-pgen \
-  --out autosomes_hq \
-  --memory 20000 \
-  --threads 4
-
-
-# Now rm-dup on the much smaller set
-plink2 --pfile autosomes_hq \
-  --rm-dup exclude-mismatch \
-  --make-bed \
-  --out autosomes \
-  --memory 12000 \
-  --threads 4
-
-# ========================================
-# Clean up intermediate and temporary files
-# ========================================
-
-rm all_hg38.pgen.zst
-rm all_hg38.pgen
-rm all_hg38.pvar.zst
-rm all_hg38.pvar
-rm all_hg38.psam
-rm deg2_hg38.king.cutoff.out.id
-rm all_hg38_unrelated.psam
-rm all_hg38_unrelated.pvar
-rm all_hg38_unrelated.pgen
-rm all_hg38_unrelated.log
-rm autosomes.log
-
-# ========================================
-# Build a SampleID list from the autosomes.fam file
-# ========================================
-
-awk '{ print $1, $2 }' autosomes.fam > unrelated_keep.txt
-
-# ========================================
-# Create new PLINK binary fileset using:
-#   - --keep sample list
-#   - --extract high-quality SNP list (one rsID per line)
-# ========================================
-
-plink2 --bfile autosomes \
-       --keep unrelated_keep.txt \
-       --extract /opt/high_quality_snps.txt \
-       --make-bed \
-       --out global_before_qc \
-       --memory 12000 \
-       --threads 4
 
 # ========================================
 # Create new PLINK binary fileset using:
@@ -127,7 +67,7 @@ plink2 --bfile global_before_qc \
   --make-bed \
   --out global_qc_maf \
   --memory 12000 \
-  --threads 4
+  --threads 6
 
 # ========================================
 # 2) LD prune (ADMIXTURE manual-style)
@@ -138,7 +78,7 @@ plink2 --bfile global_qc_maf \
   --indep-pairwise 50 10 0.1 \
   --out global_ldprune \
   --memory 12000 \
-  --threads 4
+  --threads 6
 
 # ========================================
 # Make the pruned dataset for ADMIXTURE
@@ -149,25 +89,38 @@ plink2 --bfile global_qc_maf \
   --make-bed \
   --out global \
   --memory 12000 \
-  --threads 4
+  --threads 6
 
 # ========================================
 # Clean up intermediate and temporary files
 # ========================================
 
-rm -rf autosomes*
-rm -rf global_before_qc*
-rm -rf global_qc_maf*
-rm -rf non_amr_non_sas_no_fin_no_acb_asw_ids*
-rm -rf global_ldprune*
-rm global.log
+# Remove raw downloads + decompressed inputs
+rm -f \
+  all_hg38.pgen.zst \
+  all_hg38.pvar.zst \
+  all_hg38.pgen \
+  all_hg38.pvar \
+  all_hg38.psam \
+  deg2_hg38.king.cutoff.out.id
+
+# Remove intermediate PLINK outputs
+rm -f \
+  global_before_qc* \
+  global_qc_maf* \
+  global_ldprune*
+
 
 # ========================================
-# Run ADMIXTURE with 5 clusters and 4 threads
+# Run ADMIXTURE with 5 clusters and 6 threads
 # ========================================
 
-admixture -j4 --seed=12345 global.bed 5
+admixture -j6 --seed=12345 global.bed 5
 
-rm global.bed  # No longer needed
+
+# Remove ADMIXTURE inputs 
+rm -f \
+  global.bed \
+  global.log 
 
 
