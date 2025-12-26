@@ -81,6 +81,8 @@ wget -O superpopulations.tsv https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase3/2
 
 cd ..
 
-python analyze_clusters.py
+python3 /opt/analyze_clusters.py
+
+
 
 

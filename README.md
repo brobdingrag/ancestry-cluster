@@ -1,6 +1,6 @@
 # Ancestry Cluster Pipeline (ADMIXTURE + 1000 Genomes)
 
-This repo is a Dockerized pipeline that runs **ADMIXTURE** on the **1000 Genomes Project** dataset to infer **5 ancestral “super-population” clusters** from genotype data.
+This repo is a Dockerized pipeline that runs **ADMIXTURE** on the **1000 Genomes Project** dataset to infer **5 ancestral “super-population” clusters** from genetic data.
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/1000_Genomes_Project.svg/1280px-1000_Genomes_Project.svg.png" alt="1000 Genomes Project" width="800" />
 
@@ -24,14 +24,13 @@ We run **UNSUPERVISED** ADMIXTURE on 1000 Genomes.
 
 **Unsupervised means:**
 - **ADMIXTURE is NOT given population labels** (e.g., AFR/EUR/EAS/SAS/AMR) for any individual.
-- It only sees **genotypes** and a chosen number of clusters **K** (here **K=5**).
+- It only sees **genotypes** (genetic data) and a chosen number of clusters **K** (here **K=5**).
 - It learns **5 clusters purely from genetic variation**, by fitting a statistical model.
 
 **Only after ADMIXTURE finishes**, we download 1000G population metadata (`samples.txt`, `populations.tsv`, `superpopulations.tsv`) and then:
-- **post hoc** compare the inferred clusters to known 1000G population groupings
-- assign interpretations like “this component corresponds to AFR/EUR/…” based on the patterns we observe
+- **post hoc** compare the inferred clusters to known the self-reported race / regions of origin of the 1000 Genomes participants. 
 
-So: **the algorithm “discovers” 5 clusters**; we **interpret** them afterward.
+So: **the algorithm “discovers” 5 natural clusters / ancestral populations**; we **interpret** them afterward.
 
 ---
 
@@ -91,7 +90,7 @@ This heatmap summarizes ancestry percentages **per population**:
 - Rows are labeled by `Superpopulation: Population`
 - Columns are the **inferred** ancestral components (A–E)
 
-![Median and IQR per population](example_pdfs/median_iqr_each_population.pdf)
+![Median and IQR per population](example_images/median_iqr_each_population.png)
 
 ### Each individual (full-resolution view)
 This stacked-bar plot shows:
@@ -99,7 +98,7 @@ This stacked-bar plot shows:
 - ancestry proportions across the 5 inferred components
 - individuals are ordered by superpopulation/population labels **only for visualization** (labels are applied after inference)
 
-![Ancestry fraction per individual](example_pdfs/ancestry_fraction_each_individual.pdf)
+![Ancestry fraction per individual](example_images/ancestry_fraction_each_individual.png)
 
 ---
 
