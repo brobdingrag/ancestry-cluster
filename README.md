@@ -103,7 +103,7 @@ Practical takeaway:
 
 ## What the included plots show
 
-This repo includes example PDFs produced by `analyze_clusters.py`:
+This repo includes example images produced by `analyze_clusters.py`:
 
 ### Estimated cluster assignment (ancestry) of individual 
 This stacked-bar plot shows:
@@ -162,7 +162,7 @@ Network speed matters a lot because the input genotype download is large.
   Downloads data, filters/QCs SNPs, LD prunes, runs ADMIXTURE (K=5), downloads labels *after* clustering, then runs analysis.
 
 - `analyze_clusters.py`  
-  Loads `global.5.Q` (Q), joins 1000G population/superpopulation metadata, and generates the two PDFs shown above.
+  Loads `global.5.Q` (Q), joins 1000G population/superpopulation metadata, and generates the two images shown above.
 
 - `high_quality_snps.txt`  
   SNP list used for extraction prior to QC + LD pruning.
@@ -196,10 +196,10 @@ After a successful run, you should have:
 
 The analysis script also produces:
 
-* `median_iqr_each_population.pdf`
-* `ancestry_fraction_each_individual.pdf`
+* `median_iqr_each_population.[pdf/.png]`
+* `ancestry_fraction_each_individual.[pdf/.png]`
 
-(Depending on how you run/mount volumes, these PDFs may appear in your working directory or alongside the script outputs.)
+(Depending on how you run/mount volumes, these images may appear in your working directory or alongside the script outputs.)
 
 ---
 
