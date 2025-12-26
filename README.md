@@ -11,19 +11,14 @@ This repo is a Dockerized pipeline that runs **ADMIXTURE** on the **1000 Genomes
 The **1000 Genomes Project (1KGP)** is a widely used public reference panel created by an international consortium to catalog human genetic variation. The final “Phase 3” release contains genotype data from **2,504 individuals across 26 populations worldwide**, spanning five broad continental-scale groups (often referred to as “super-populations”). 
 
 ### Where the samples come from
-Participants were recruited from multiple sites around the world (and in some cases diaspora communities), with collection organized into named **populations** (3-letter codes like `YRI`, `CEU`, `CHB`, `PEL`, etc.). The project emphasizes broad consent and open release of de-identified genetic data, and many samples are also available as cell lines / DNA through repositories such as Coriell. 
+Participants were recruited from multiple sites around the world (and in some cases diaspora communities), with collection organized into named **populations** and **superpopulations**. The project emphasizes broad consent and open release of de-identified genetic data. 
 
-### What “Population” vs “Superpopulation” means (in this repo)
+### What “Population” vs “Superpopulation” means
 The 1000 Genomes metadata uses:
-- **Population**: a specific sampling group (3-letter code; e.g., `YRI` = Yoruba in Ibadan, Nigeria)
-- **Superpopulation**: a higher-level grouping of populations (e.g., `AFR`, `EUR`, `EAS`, `SAS`, `AMR`) 
+- **Population**: a specific sampling group (e.g., Yoruba in Ibadan, Nigeria; British in England and Scotland)
+- **Superpopulation**: a higher-level grouping of populations (e.g., African, European, East Asian, South Asian, American) 
 
-This pipeline downloads the official label files *after* the unsupervised ADMIXTURE run, and uses them only for **post hoc interpretation and plotting**:
-- `data/samples.txt`: maps each `SampleID` to a 1000G population code and superpopulation code (used to annotate individuals)
-- `data/populations.tsv`: maps population codes to human-readable descriptions and superpopulation membership
-- `data/superpopulations.tsv`: maps superpopulation codes to descriptions
-
-**Important:** these labels are **not** provided to ADMIXTURE during clustering—ADMIXTURE only sees genotypes. We use the labels afterward to compare the inferred clusters to the known 1000G population groupings. 
+This pipeline downloads the official label files *after* the unsupervised ADMIXTURE run, and uses them only for **post hoc interpretation and plotting**.
 
 ---
 
