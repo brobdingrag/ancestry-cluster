@@ -6,3 +6,6 @@
 !high_quality_snps.txt
 !requirements.txt
 !analyze_clusters.py
+!example_pdfs/
+!example_pdfs/ancestry_fraction_each_individual.pdf
+!example_pdfs/median_iqr_each_population.pdf

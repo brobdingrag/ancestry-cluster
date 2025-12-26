@@ -1,66 +1,222 @@
-# Ancestry Cluster Pipeline
+# Ancestry Cluster Pipeline (ADMIXTURE + 1000 Genomes)
 
-This repository provides a Dockerized pipeline for running an ADMIXTURE-based ancestry clustering analysis on high-coverage 1000 Genomes Project data (hg38). It processes genotype data, filters SNPs, performs LD pruning, and runs ADMIXTURE with K=5 populations to generate ancestry proportion files (`.P` and `.Q`).
+This repo is a Dockerized pipeline that runs **ADMIXTURE** on the **1000 Genomes Project** dataset to infer **5 ancestral “super-population” clusters** from genotype data.
 
-## Key Files
-- `cluster.sh`: The main Bash script that downloads data, processes it with PLINK2, and runs ADMIXTURE.
-- `high_quality_snps.txt`: A list of high-quality SNPs for filtering.
-- `Dockerfile`: Builds the container image with dependencies (Ubuntu, PLINK2, ADMIXTURE).
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/1000_Genomes_Project.svg/1280px-1000_Genomes_Project.svg.png" alt="1000 Genomes Project" width="800" />
 
-The pre-built image is available on GitHub Container Registry (GHCR) for easy use.
+---
 
-## Prerequisites
-- Docker installed on your system.
-- Stable internet connection (downloads ~6GB+ of genetic data).
-- Sufficient disk space (~10GB+ for data and outputs).
+## What tool are we using?
 
-## Quick Start
+We use **ADMIXTURE** (model-based ancestry estimation / clustering):
+
+- Project page: https://dalexander.github.io/admixture/
+- Manual (PDF): https://dalexander.github.io/admixture/admixture-manual.pdf
+
+**Citation (please use this when referencing the method):**  
+D.H. Alexander, J. Novembre, and K. Lange. *Fast model-based estimation of ancestry in unrelated individuals.* **Genome Research**, 19:1655–1664, 2009.
+
+---
+
+## What are we doing? (Unsupervised clustering, very explicitly)
+
+We run **UNSUPERVISED** ADMIXTURE on 1000 Genomes.
+
+**Unsupervised means:**
+- **ADMIXTURE is NOT given population labels** (e.g., AFR/EUR/EAS/SAS/AMR) for any individual.
+- It only sees **genotypes** and a chosen number of clusters **K** (here **K=5**).
+- It learns **5 clusters purely from genetic variation**, by fitting a statistical model.
+
+**Only after ADMIXTURE finishes**, we download 1000G population metadata (`samples.txt`, `populations.tsv`, `superpopulations.tsv`) and then:
+- **post hoc** compare the inferred clusters to known 1000G population groupings
+- assign interpretations like “this component corresponds to AFR/EUR/…” based on the patterns we observe
+
+So: **the algorithm “discovers” 5 clusters**; we **interpret** them afterward.
+
+---
+
+## How ADMIXTURE works (high level)
+
+ADMIXTURE fits a model where each individual’s genome is a mixture of **K ancestral populations**.
+
+It estimates two key outputs:
+
+### 1) The `Q` file (`global.5.Q`) — individual ancestry proportions
+- Shape: **N individuals × K clusters**
+- Each row sums to ~1
+- Entry `Q[i,k]` is the **estimated fraction of individual *i*’s genome** assigned to ancestral cluster *k*
+
+### 2) The `P` file (`global.5.P`) — ancestral allele frequencies
+- Conceptually: **K clusters × M SNPs**
+- `P[k, m]` is the **estimated allele frequency** at SNP *m* in ancestral cluster *k*
+
+Internally, ADMIXTURE iteratively updates:
+- **ancestry proportions per individual** (Q)
+- **allele frequencies per cluster** (P)
+
+…to maximize the likelihood of the observed genotypes under the model.
+
+---
+
+## Why “super-populations” and what we do with them
+
+With **K=5**, we typically observe components that (when inspected after the fact) align closely with the five 1000G “super-population” groupings:
+
+- AFR (African)
+- EUR (European)
+- EAS (East Asian)
+- SAS (South Asian)
+- AMR (Admixed American)
+
+Important nuance:
+- ADMIXTURE does **not** know these labels.
+- We infer components **first**, then **compare** to known labels **afterward**.
+
+### Projection mode (how you use this on new people)
+Once you’ve inferred allele frequencies (**the `P` file**) on a reference panel (here: 1000G), you can use ADMIXTURE **projection mode** (`--project`) to estimate ancestry proportions (**a `Q` file**) for **new individuals**, while keeping the inferred ancestral allele frequencies fixed.
+
+Practical takeaway:
+- **Train** on 1000G → learn **`P`**
+- **Project** new genotypes → compute **`Q`** percentages for each individual
+
+---
+
+## What the included plots show
+
+This repo includes example PDFs produced by `analyze_clusters.py`:
+
+### Median + IQR by population (summary view)
+This heatmap summarizes ancestry percentages **per population**:
+- Each cell shows **median (IQR)** for the **estimated %** ancestry component
+- Rows are labeled by `Superpopulation: Population`
+- Columns are the **inferred** ancestral components (A–E)
+
+![Median and IQR per population](example_pdfs/median_iqr_each_population.pdf)
+
+### Each individual (full-resolution view)
+This stacked-bar plot shows:
+- **every individual** (one vertical bar per person)
+- ancestry proportions across the 5 inferred components
+- individuals are ordered by superpopulation/population labels **only for visualization** (labels are applied after inference)
+
+![Ancestry fraction per individual](example_pdfs/ancestry_fraction_each_individual.pdf)
+
+---
+
+## SNP set: “high quality SNPs” (and how flexible this is)
+
+In this pipeline, `high_quality_snps.txt` is intended to represent an **intersection** of:
+1. The SBayesRC ~7M SNP set: https://github.com/zhilizheng/SBayesRC  
+2. The UK Biobank PCA SNPs map: https://biobank.ctsu.ox.ac.uk/ukb/ukb/auxdata/snp_pca_map.txt  
+3. SNPs present in the 1000 Genomes dataset used here
+
+That intersection is convenient because it creates a SNP set that:
+- overlaps common downstream resources (UKB, PRS/PCA workflows, etc.)
+- is broadly well-behaved and widely used
+
+That said: **ADMIXTURE does not require these exact SNPs.**  
+You can use *almost any* SNP set as long as you:
+- sample SNPs roughly uniformly across the **autosomes (chr 1–22)**
+- apply basic QC
+- ideally do **LD pruning** (this pipeline does)
+
+---
+
+## Runtime and resource expectations
+
+On a typical modern workstation:
+- **Runtime:** expect **~1 hour** end-to-end (network + compute)
+- **Threads:** uses up to **6 threads** (`--threads 6`, `admixture -j6`)
+- **Memory:** plan for **~20 GB RAM** available (PLINK steps request up to 20,000 MB)
+- **Storage:** plan for **~10+ GB free disk** (downloads + intermediates + outputs)
+
+Network speed matters a lot because the input genotype download is large.
+
+---
+
+## Repo contents
+
+- `cluster.sh`  
+  Downloads data, filters/QCs SNPs, LD prunes, runs ADMIXTURE (K=5), downloads labels *after* clustering, then runs analysis.
+
+- `analyze_clusters.py`  
+  Loads `global.5.Q` (Q), joins 1000G population/superpopulation metadata, and generates the two PDFs shown above.
+
+- `high_quality_snps.txt`  
+  SNP list used for extraction prior to QC + LD pruning.
+
+- `Dockerfile`  
+  Builds a runnable environment with PLINK2 + ADMIXTURE + Python dependencies.
+
+---
+
+## Quick start (recommended)
+
 1. Pull the image:
-   ```
+   ```bash
    docker pull ghcr.io/brobdingrag/ancestry-cluster:latest
-   ```
+````
 
-2. Run the pipeline (outputs will appear in a `./data` folder in your current directory):
-   ```
+2. Run (writes outputs into `./data` on your host):
+
+   ```bash
    docker run --rm -it -v "$PWD:/work" ghcr.io/brobdingrag/ancestry-cluster:latest
    ```
 
-   - This will download and process data, then output `global.5.P` and `global.5.Q` in `./data`.
-   - The process may take 30-60 minutes depending on your hardware and network.
-
-## Building Locally (Optional)
-If you want to customize or rebuild the image:
-1. Clone the repo:
-   ```
-   git clone https://github.com/brobdingrag/ancestry-cluster.git
-   cd ancestry-cluster
-   ```
-
-2. Build the image:
-   ```
-   docker build -t ghcr.io/brobdingrag/ancestry-cluster:latest .
-   ```
-
-   - For non-AVX2 systems (e.g., older CPUs or ARM-based like Apple Silicon), use:
-     ```
-     docker build --build-arg PLINK2_ZIP_URL="https://s3.amazonaws.com/plink2-assets/plink2_linux_x86_64_20251205.zip" -t ghcr.io/brobdingrag/ancestry-cluster:latest .
-     ```
-
-3. Run as above.
+---
 
 ## Outputs
-- `global.5.P`: Population allele frequencies.
-- `global.5.Q`: Individual ancestry proportions.
-- Other intermediates are cleaned up, but you can modify `cluster.sh` to keep them if needed.
+
+After a successful run, you should have:
+
+* `data/global.5.Q` — **ancestry proportions per individual** (Q)
+* `data/global.5.P` — **ancestral allele frequencies** (P)
+
+The analysis script also produces:
+
+* `median_iqr_each_population.pdf`
+* `ancestry_fraction_each_individual.pdf`
+
+(Depending on how you run/mount volumes, these PDFs may appear in your working directory or alongside the script outputs.)
+
+---
 
 ## Troubleshooting
-- **AVX2 Error**: If PLINK2 complains about missing AVX2 instructions, rebuild with the non-AVX2 arg as shown above.
-- **Download Issues**: Ensure Dropbox URLs in `cluster.sh` work; add `?dl=1` to ends if wget fetches HTML instead of files (e.g., `https://www.dropbox.com/s/j72j6uciq5zuzii/all_hg38.pgen.zst?dl=1`).
-- **Permissions**: Outputs are owned by UID 1000; use `chown` on host if needed.
-- **Large Data**: Be patient with downloads; retry if network fails.
-- For errors, check container logs or run with `--entrypoint /bin/bash` for interactive debugging.
 
+* **AVX2 error from PLINK2**
+  If your CPU doesn’t support AVX2, rebuild using the non-AVX2 PLINK2 build:
+
+  ```bash
+  docker build \
+    --build-arg PLINK2_ZIP_URL="https://s3.amazonaws.com/plink2-assets/plink2_linux_x86_64_20251205.zip" \
+    -t ghcr.io/brobdingrag/ancestry-cluster:latest .
+  ```
+
+* **Dropbox downloads return HTML**
+  If `wget` fetches HTML instead of the file, add `?dl=1` to the end of Dropbox links.
+
+* **Want different K?**
+  Change:
+
+  ```bash
+  admixture -j6 --seed=12345 global.bed 5
+  ```
+
+  to another K, and update the analysis accordingly.
+
+---
+
+## Notes on interpretation
+
+These outputs are best thought of as **statistical ancestry components** inferred from the dataset and model assumptions.
+They are often highly informative and align well with known population structure, but:
+
+* components can shift with SNP choice, LD pruning, sample composition, and K
+* “labels” like AFR/EUR/etc. are **interpretations applied after inference**, not something the model was told
+
+---
 
 ## Contact
+
 For issues or suggestions, open a GitHub issue in this repo.
 
