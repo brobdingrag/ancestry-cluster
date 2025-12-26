@@ -191,8 +191,8 @@ After a successful run, you should have:
 
 The analysis script also produces:
 
-* `median_iqr_each_population.[pdf/.png]`
-* `ancestry_fraction_each_individual.[pdf/.png]`
+* `median_iqr_each_population.[pdf/png]`
+* `ancestry_fraction_each_individual.[pdf/png]`
 
 (Depending on how you run/mount volumes, these images may appear in your working directory or alongside the script outputs.)
 
