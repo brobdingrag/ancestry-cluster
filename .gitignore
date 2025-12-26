@@ -4,3 +4,5 @@
 !README.md
 !cluster.sh
 !high_quality_snps.txt
+!requirements.txt
+!analyze_clusters.py

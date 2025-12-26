@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Set the working directory inside the container
 WORKDIR /work
 
-# Install system dependencies required for the script and binaries
+# Install system dependencies required for the script and binaries, including Python 3 and pip
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       bash \
@@ -21,7 +21,9 @@ RUN apt-get update && \
       sed \
       findutils \
       libgomp1 \
-      libstdc++6 && \
+      libstdc++6 \
+      python3 \
+      python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
 # Install PLINK2 (default to latest AVX2 Intel build; override with --build-arg if needed)
@@ -44,6 +46,10 @@ RUN wget -O /tmp/admixture.tar.gz "${ADMIXTURE_TGZ_URL}" && \
 
 # Download pipeline files from GitHub raw URLs to locations that won't be overwritten by volume mounts
 RUN wget -O /opt/high_quality_snps.txt "https://raw.githubusercontent.com/brobdingrag/ancestry-cluster/main/high_quality_snps.txt"
+RUN wget -O /opt/analyze_clusters.py "https://raw.githubusercontent.com/brobdingrag/ancestry-cluster/main/analyze_clusters.py"
+RUN wget -O /opt/requirements.txt "https://raw.githubusercontent.com/brobdingrag/ancestry-cluster/main/requirements.txt"
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install -r /opt/requirements.txt
 RUN wget -O /usr/local/bin/cluster.sh "https://raw.githubusercontent.com/brobdingrag/ancestry-cluster/main/cluster.sh" && \
     chmod +x /usr/local/bin/cluster.sh
 

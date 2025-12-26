@@ -6,12 +6,11 @@ set -euo pipefail
 mkdir -p data
 cd data
 
-# Download input genotype and sample metadata files
+# Download input genotype files
 wget https://www.dropbox.com/s/j72j6uciq5zuzii/all_hg38.pgen.zst
 wget https://www.dropbox.com/scl/fi/fn0bcm5oseyuawxfvkcpb/all_hg38_rs.pvar.zst?rlkey=przncwb78rhz4g4ukovocdxaz
 wget https://www.dropbox.com/scl/fi/u5udzzaibgyvxzfnjcvjc/hg38_corrected.psam?rlkey=oecjnk4vmbhc8b1p202l0ih4x
 wget https://www.dropbox.com/s/4zhmxpk5oclfplp/deg2_hg38.king.cutoff.out.id
-wget -O samples.txt https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
 
 # Rename files as needed and decompress genotype files
 mv all_hg38_rs.pvar.zst?rlkey=przncwb78rhz4g4ukovocdxaz all_hg38.pvar.zst
@@ -72,8 +71,16 @@ rm -f \
 # Run ADMIXTURE with K=5 populations (threads=6, random seed=12345)
 admixture -j6 --seed=12345 global.bed 5
 
-# Remove ADMIXTURE input and log files after completion
-rm -f \
-  global.bed \
-  global.log 
+# Remove the bed file after completion
+rm global.bed
+
+# Download the population labels AFTER the (unsupervised) clustering is complete
+wget -O samples.txt https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
+wget -O populations.tsv https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase3/20131219.populations.tsv
+wget -O superpopulations.tsv https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase3/20131219.superpopulations.tsv
+
+cd ..
+
+python analyze_clusters.py
+
 
