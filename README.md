@@ -72,7 +72,7 @@ Important nuance:
 - We infer clusters **first**, then **compare** to known labels **afterward**.
 
 ### Projection mode (how you use this on new people)
-Once you’ve inferred allele frequencies (**the `P` file**) on a reference panel (here: 1000G), you can use ADMIXTURE **projection mode** (`--project`) to estimate ancestry proportions (**a `Q` file**) for **new individuals**, while keeping the inferred ancestral allele frequencies fixed.
+Once you’ve inferred allele frequencies (**the `P` file**) on a reference panel (here: 1000G), you can use ADMIXTURE **projection mode** (`--project`) to estimate ancestry proportions (**a `Q` file**) for **new individuals**, while keeping the inferred ancestral allele frequencies fixed. This is a lot like what 23andMe does when they tell you the percentage of your genoem that belongs to each ancestry group. 
 
 Practical takeaway:
 - **Train** on 1000G → learn **`P`**
@@ -128,7 +128,7 @@ You can use *almost any* SNP set as long as you:
 On a typical modern workstation:
 - **Runtime:** expect **~1 hour** end-to-end (network + compute)
 - **Threads:** uses up to **6 threads** (`--threads 6`, `admixture -j6`)
-- **Memory:** plan for **~20 GB RAM** available (PLINK steps request up to 20,000 MB)
+- **Memory:** plan for **~14 GB RAM** available (PLINK steps request up to 14,000 MB)
 - **Storage:** plan for **~10+ GB free disk** (downloads + intermediates + outputs)
 
 Network speed matters a lot because the input genotype download is large.
@@ -154,15 +154,15 @@ Network speed matters a lot because the input genotype download is large.
 ## Quick start (recommended)
 
 1. Pull the image:
-   ```bash
-   docker pull ghcr.io/brobdingrag/ancestry-cluster:latest
-````
+```bash
+docker pull ghcr.io/brobdingrag/ancestry-cluster:latest
+```
 
 2. Run (writes outputs into `./data` on your host):
 
-   ```bash
-   docker run --rm -it -v "$PWD:/work" ghcr.io/brobdingrag/ancestry-cluster:latest
-   ```
+```bash
+docker run --rm -it -v "$PWD:/work" ghcr.io/brobdingrag/ancestry-cluster:latest
+```
 
 ---
 

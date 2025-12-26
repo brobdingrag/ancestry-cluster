@@ -28,7 +28,7 @@ plink2 --pfile all_hg38 vzs \
   --make-bed \
   --out global_before_qc \
   --allow-extra-chr \
-  --memory 20000 \
+  --memory 14000 \
   --threads 6
 
 # Filter variants to keep only those with MAF >= 0.01
