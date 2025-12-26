@@ -1,6 +1,6 @@
 # Ancestry Cluster Pipeline (ADMIXTURE + 1000 Genomes)
 
-This repo is a Dockerized pipeline that runs **ADMIXTURE** on the **1000 Genomes Project** dataset to infer **5 ancestral “super-population” clusters** from genetic data.
+This repo is a Dockerized pipeline that runs **ADMIXTURE** on the **1000 Genomes Project** dataset to infer **5 ancestral “super-population” clusters** from genetic data. 
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/1000_Genomes_Project.svg/1280px-1000_Genomes_Project.svg.png" alt="1000 Genomes Project" width="800" />
 
@@ -59,7 +59,7 @@ Internally, ADMIXTURE iteratively updates:
 
 ## Why “super-populations” and what we do with them
 
-With **K=5**, we typically observe components that (when inspected after the fact) align closely with the five 1000G “super-population” groupings:
+With **K=5**, we typically observe clusters that (when inspected after the fact) align closely with the five 1000G “super-population” groupings:
 
 - AFR (African)
 - EUR (European)
@@ -69,7 +69,7 @@ With **K=5**, we typically observe components that (when inspected after the fac
 
 Important nuance:
 - ADMIXTURE does **not** know these labels.
-- We infer components **first**, then **compare** to known labels **afterward**.
+- We infer clusters **first**, then **compare** to known labels **afterward**.
 
 ### Projection mode (how you use this on new people)
 Once you’ve inferred allele frequencies (**the `P` file**) on a reference panel (here: 1000G), you can use ADMIXTURE **projection mode** (`--project`) to estimate ancestry proportions (**a `Q` file**) for **new individuals**, while keeping the inferred ancestral allele frequencies fixed.
@@ -87,7 +87,7 @@ This repo includes example PDFs produced by `analyze_clusters.py`:
 ### Estimated cluster assignment (ancestry) of individual 
 This stacked-bar plot shows:
 - **every individual** (one vertical bar per person)
-- ancestry proportions across the 5 inferred components
+- ancestry proportions across the 5 inferred clusters
 - individuals are ordered by superpopulation/population labels **only for visualization** (labels are applied after inference)
 
 ![Ancestry fraction per individual](example_images/ancestry_fraction_each_individual.png)
@@ -95,9 +95,9 @@ This stacked-bar plot shows:
 
 ### Median + IQR ancestry fraction by population (summary view)
 This heatmap summarizes ancestry percentages **per population**:
-- Each cell shows **median (IQR)** for the **estimated %** ancestry component
+- Each cell shows **median (IQR)** for the **estimated %** ancestry groups
 - Rows are labeled by `Superpopulation: Population`
-- Columns are the **inferred** ancestral components (A–E)
+- Columns are the **inferred** ancestral clusters (A–E)
 
 ![Median and IQR per population](example_images/median_iqr_each_population.png)
 
@@ -209,10 +209,10 @@ The analysis script also produces:
 
 ## Notes on interpretation
 
-These outputs are best thought of as **statistical ancestry components** inferred from the dataset and model assumptions.
+These outputs are best thought of as **statistical ancestry clusters** inferred from the dataset and model assumptions.
 They are often highly informative and align well with known population structure, but:
 
-* components can shift with SNP choice, LD pruning, sample composition, and K
+* clusters can shift with SNP choice, LD pruning, sample composition, and K
 * “labels” like AFR/EUR/etc. are **interpretations applied after inference**, not something the model was told
 
 ---
